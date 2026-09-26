@@ -1,0 +1,115 @@
+openapi: 3.1.0
+info:
+  title: YouTube Downloader GPT Action
+  version: 1.0.0
+  description: >
+    Download videos only when the requester has the legal/contractual right
+    to download the content. The action validates YouTube URLs, retrieves
+    metadata, and can prepare MP4 or MP3 files.
+servers:
+  - url: https://YOUR_PUBLIC_DOMAIN.example
+paths:
+  /health:
+    get:
+      operationId: health
+      summary: Check API health
+      responses:
+        "200":
+          description: API is healthy
+  /info:
+    post:
+      operationId: getVideoInfo
+      summary: Get YouTube video information
+      security:
+        - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InfoRequest"
+      responses:
+        "200":
+          description: Video metadata
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VideoInfo"
+        "400":
+          description: Invalid URL
+        "401":
+          description: Unauthorized
+  /download:
+    post:
+      operationId: downloadVideo
+      summary: Prepare an MP4 or MP3 download
+      description: >
+        Use only for content the requester is authorized to download.
+      security:
+        - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DownloadRequest"
+      responses:
+        "200":
+          description: Download prepared
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DownloadResponse"
+        "400":
+          description: Invalid request
+        "401":
+          description: Unauthorized
+        "500":
+          description: Download failure
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+  schemas:
+    InfoRequest:
+      type: object
+      required: [url]
+      properties:
+        url:
+          type: string
+          format: uri
+          description: YouTube video URL
+    DownloadRequest:
+      type: object
+      required: [url]
+      properties:
+        url:
+          type: string
+          format: uri
+          description: YouTube video URL
+        format:
+          type: string
+          enum: [mp4, mp3]
+          default: mp4
+    VideoInfo:
+      type: object
+      properties:
+        id: {type: string}
+        title: {type: string}
+        duration_seconds: {type: integer}
+        channel: {type: string}
+        thumbnail: {type: string}
+        webpage_url: {type: string}
+    DownloadResponse:
+      type: object
+      properties:
+        status: {type: string}
+        title: {type: string}
+        format: {type: string}
+        filename: {type: string}
+        download_url:
+          type: [string, "null"]
+        path: {type: string}
+        note: {type: string}

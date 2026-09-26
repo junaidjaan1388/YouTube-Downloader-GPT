@@ -1,0 +1,11 @@
+services:
+  youtube-downloader:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      DOWNLOADER_API_KEY: "change-this-to-a-long-random-key"
+      PUBLIC_BASE_URL: "http://localhost:8000"
+      MAX_DURATION_SECONDS: "3600"
+    volumes:
+      - ./downloads:/app/downloads
